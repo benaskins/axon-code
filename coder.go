@@ -1,12 +1,17 @@
 package code
 
 import (
+	"context"
+	"fmt"
 	"io"
 	"time"
 
 	loop "github.com/benaskins/axon-loop"
+	tool "github.com/benaskins/axon-tool"
 	talk "github.com/benaskins/axon-talk"
 
+	"github.com/benaskins/axon-code/internal/prompt"
+	internaltools "github.com/benaskins/axon-code/internal/tools"
 	"github.com/benaskins/axon-code/plan"
 )
 
@@ -46,8 +51,71 @@ func (c *Coder) Config() Config {
 }
 
 // Implement runs the coding agent loop for the given plan step.
-// Wired with axon-loop in step 8; stub returns empty string until then.
+// It builds the tool registry, assembles the system prompt, runs axon-loop,
+// and returns the done summary on success.
 func (c *Coder) Implement(projectDir string, step plan.Step, feedback string) (string, error) {
-	_ = loop.RunConfig{} // placeholder; fully wired in step 8
-	return "", nil
+	ctx, cancel := context.WithTimeout(context.Background(), c.cfg.Timeout)
+	defer cancel()
+
+	// Build tools bound to projectDir.
+	toolDefs, signal, err := internaltools.Build(projectDir, internaltools.Config{})
+	if err != nil {
+		return "", fmt.Errorf("implement: build tools: %w", err)
+	}
+
+	// Convert slice to map as required by loop.RunConfig.
+	toolMap := make(map[string]tool.ToolDef, len(toolDefs))
+	for _, td := range toolDefs {
+		toolMap[td.Name] = td
+	}
+
+	// Wrap the done tool to cancel the context immediately when called,
+	// so the loop exits without making an extra LLM round trip.
+	if doneTool, ok := toolMap["done"]; ok {
+		origExec := doneTool.Execute
+		doneTool.Execute = func(tc *tool.ToolContext, args map[string]any) tool.ToolResult {
+			res := origExec(tc, args)
+			cancel()
+			return res
+		}
+		toolMap["done"] = doneTool
+	}
+
+	systemPrompt := prompt.Build(c.cfg.SystemPromptPrefix, step, feedback)
+
+	req := &loop.Request{
+		Messages: []loop.Message{
+			{Role: loop.RoleSystem, Content: systemPrompt},
+			{Role: loop.RoleUser, Content: step.Title + ": " + step.Description},
+		},
+		MaxIterations: c.cfg.MaxIterations,
+	}
+
+	var cb loop.Callbacks
+	if c.cfg.Verbose != nil {
+		w := c.cfg.Verbose
+		cb.OnToolUse = func(name string, args map[string]any) {
+			fmt.Fprintf(w, "tool: %s\n", name)
+		}
+	}
+
+	_, loopErr := loop.Run(ctx, loop.RunConfig{
+		Client:    c.client,
+		Request:   req,
+		Tools:     toolMap,
+		ToolCtx:   &tool.ToolContext{Ctx: ctx},
+		Callbacks: cb,
+	})
+
+	// If the done tool was called, return the summary regardless of loop error
+	// (context cancellation is expected when done exits the loop early).
+	if signal.Done {
+		return signal.Summary, nil
+	}
+
+	if loopErr != nil {
+		return "", fmt.Errorf("implement: %w", loopErr)
+	}
+
+	return "", fmt.Errorf("implement: loop completed without done signal")
 }

@@ -3,7 +3,6 @@ package prompt
 import (
 	"strings"
 
-	code "github.com/benaskins/axon-code"
 	"github.com/benaskins/axon-code/plan"
 )
 
@@ -17,11 +16,11 @@ Guidelines:
 - Be concise. Do not explain what you are about to do — just do it.`
 
 // Build assembles the full system prompt for a coding agent turn.
-func Build(cfg code.Config, step plan.Step, feedback string) string {
+func Build(systemPromptPrefix string, step plan.Step, feedback string) string {
 	var b strings.Builder
 
-	if cfg.SystemPromptPrefix != "" {
-		b.WriteString(cfg.SystemPromptPrefix)
+	if systemPromptPrefix != "" {
+		b.WriteString(systemPromptPrefix)
 		b.WriteString("\n\n")
 	}
 
