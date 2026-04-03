@@ -26,6 +26,9 @@ type Config struct {
 // Option applies a configuration change to a Config.
 type Option func(*Config)
 
+// Compile-time check that *Coder satisfies Agent.
+var _ Agent = (*Coder)(nil)
+
 // Coder implements the Agent interface using axon-loop, axon-talk, and axon-tool.
 type Coder struct {
 	client talk.LLMClient

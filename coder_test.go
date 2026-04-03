@@ -12,6 +12,29 @@ import (
 	loop "github.com/benaskins/axon-loop"
 )
 
+func TestNew_withOptions(t *testing.T) {
+	w := os.Stderr
+	c := code.New(nil,
+		code.WithMaxIterations(99),
+		code.WithTimeout(5*time.Minute),
+		code.WithSystemPromptPrefix("be terse"),
+		code.WithVerbose(w),
+	)
+	cfg := c.Config()
+	if cfg.MaxIterations != 99 {
+		t.Errorf("MaxIterations = %d, want 99", cfg.MaxIterations)
+	}
+	if cfg.Timeout != 5*time.Minute {
+		t.Errorf("Timeout = %v, want 5m", cfg.Timeout)
+	}
+	if cfg.SystemPromptPrefix != "be terse" {
+		t.Errorf("SystemPromptPrefix = %q, want %q", cfg.SystemPromptPrefix, "be terse")
+	}
+	if cfg.Verbose != w {
+		t.Errorf("Verbose = %v, want %v", cfg.Verbose, w)
+	}
+}
+
 func TestNew_defaults(t *testing.T) {
 	c := code.New(nil)
 	cfg := c.Config()
