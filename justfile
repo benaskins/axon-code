@@ -1,8 +1,5 @@
 build:
-    go build -o bin/axon-code ./cmd/axon-code
-
-install: build
-    cp bin/axon-code ~/.local/bin/axon-code
+    go build ./...
 
 test:
     go test ./...
