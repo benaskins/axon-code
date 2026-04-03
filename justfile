@@ -4,5 +4,5 @@ build:
 test:
     go test ./...
 
-vet:
+lint:
     go vet ./...
