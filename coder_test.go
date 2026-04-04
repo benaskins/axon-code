@@ -38,8 +38,8 @@ func TestNew_withOptions(t *testing.T) {
 func TestNew_defaults(t *testing.T) {
 	c := code.New(nil)
 	cfg := c.Config()
-	if cfg.MaxIterations != 50 {
-		t.Errorf("MaxIterations = %d, want 50", cfg.MaxIterations)
+	if cfg.MaxIterations != 100 {
+		t.Errorf("MaxIterations = %d, want 100", cfg.MaxIterations)
 	}
 	if cfg.Timeout != 15*time.Minute {
 		t.Errorf("Timeout = %v, want 15m", cfg.Timeout)

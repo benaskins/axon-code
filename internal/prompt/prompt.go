@@ -12,8 +12,9 @@ Guidelines:
 - Read existing code before modifying it.
 - Use the available tools to read, write, edit, search, and run commands in the project directory.
 - All file paths are relative to the project directory. Do not attempt to access paths outside it.
-- After completing the work, call the done tool with a summary of what you did.
-- Be concise. Do not explain what you are about to do — just do it.`
+- Be concise. Do not explain what you are about to do -- just do it.
+
+IMPORTANT: You MUST call the done tool when you have finished the task. Pass a brief summary of what you accomplished. If you do not call done, your work will be lost.`
 
 // Build assembles the full system prompt for a coding agent turn.
 func Build(systemPromptPrefix string, step plan.Step, feedback string) string {

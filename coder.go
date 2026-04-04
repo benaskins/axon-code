@@ -41,7 +41,7 @@ type Coder struct {
 // Default: MaxIterations=50, Timeout=15min.
 func New(client talk.LLMClient, opts ...Option) *Coder {
 	cfg := Config{
-		MaxIterations: 50,
+		MaxIterations: 100,
 		Timeout:       15 * time.Minute,
 	}
 	for _, opt := range opts {
