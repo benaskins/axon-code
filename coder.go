@@ -22,6 +22,7 @@ type Config struct {
 	Timeout            time.Duration
 	SystemPromptPrefix string
 	Verbose            io.Writer
+	GoAST              bool
 }
 
 // Option applies a configuration change to a Config.
@@ -62,7 +63,9 @@ func (c *Coder) Implement(projectDir string, step plan.Step, feedback string) (s
 	defer cancel()
 
 	// Build tools bound to projectDir.
-	toolDefs, signal, err := internaltools.Build(projectDir, internaltools.Config{})
+	toolDefs, signal, err := internaltools.Build(projectDir, internaltools.Config{
+		GoAST: c.cfg.GoAST,
+	})
 	if err != nil {
 		return "", fmt.Errorf("implement: build tools: %w", err)
 	}

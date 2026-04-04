@@ -29,3 +29,8 @@ func WithSystemPromptPrefix(s string) Option {
 func WithVerbose(w io.Writer) Option {
 	return func(c *Config) { c.Verbose = w }
 }
+
+// WithGoAST enables AST-aware tools for Go source files.
+func WithGoAST() Option {
+	return func(c *Config) { c.GoAST = true }
+}
