@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+// WithModel sets the model name for the LLM request.
+func WithModel(m string) Option {
+	return func(c *Config) { c.Model = m }
+}
+
 // WithMaxIterations sets the maximum number of loop iterations.
 func WithMaxIterations(n int) Option {
 	return func(c *Config) { c.MaxIterations = n }

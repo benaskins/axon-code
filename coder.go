@@ -17,6 +17,7 @@ import (
 
 // Config holds runtime configuration for a Coder.
 type Config struct {
+	Model              string
 	MaxIterations      int
 	Timeout            time.Duration
 	SystemPromptPrefix string
@@ -87,6 +88,7 @@ func (c *Coder) Implement(projectDir string, step plan.Step, feedback string) (s
 	systemPrompt := prompt.Build(c.cfg.SystemPromptPrefix, step, feedback)
 
 	req := &loop.Request{
+		Model: c.cfg.Model,
 		Messages: []loop.Message{
 			{Role: loop.RoleSystem, Content: systemPrompt},
 			{Role: loop.RoleUser, Content: step.Title + ": " + step.Description},
