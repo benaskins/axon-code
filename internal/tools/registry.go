@@ -20,23 +20,27 @@ func Build(projectDir string, cfg Config) ([]tool.ToolDef, *DoneSignal, error) {
 
 	fs := NewFSTools(projectDir)
 	search := NewSearchTools(projectDir)
-	bash := NewBashTool(projectDir, timeout)
+	gocmd := NewGoCmdTool(projectDir, timeout)
+	gitcmd := NewGitCmdTool(projectDir, timeout)
 	done := NewDoneTool(signal)
 
 	var tools []tool.ToolDef
 
 	if cfg.GoAST {
-		// AST-only tool set: ast + rewrite for Go files, write_file for new files.
-		// No read_file or edit_file: force the model through AST paths.
+		// AST-aware tool set: ast + rewrite for Go files, read_file for
+		// non-Go files (config, markdown, etc), write_file for new files.
+		// No bash: use go_cmd and git_cmd for toolchain operations.
 		goast := NewGoASTTools(projectDir)
 		tools = []tool.ToolDef{
 			goast.InspectTool,
 			goast.RewriteTool,
+			fs.ReadTool,
 			fs.WriteTool,
 			fs.ListTool,
 			search.GrepTool,
 			search.GlobTool,
-			bash.BashTool,
+			gocmd.GoCmdTool,
+			gitcmd.GitCmdTool,
 			done,
 		}
 	} else {
@@ -47,7 +51,8 @@ func Build(projectDir string, cfg Config) ([]tool.ToolDef, *DoneSignal, error) {
 			fs.ListTool,
 			search.GrepTool,
 			search.GlobTool,
-			bash.BashTool,
+			gocmd.GoCmdTool,
+			gitcmd.GitCmdTool,
 			done,
 		}
 	}

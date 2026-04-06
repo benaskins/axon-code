@@ -33,7 +33,7 @@ func NewFSTools(projectDir string) FSTools {
 func makeReadTool(projectDir string) tool.ToolDef {
 	return tool.ToolDef{
 		Name:        "read_file",
-		Description: "Read a file within the project directory. Optional offset (0-based line index) and limit (number of lines) control the slice returned.",
+		Description: "Read a non-Go file within the project directory (config, markdown, YAML, etc). For .go files, use the ast tool instead. Optional offset (0-based line index) and limit (number of lines) control the slice returned.",
 		Parameters: tool.ParameterSchema{
 			Type:     "object",
 			Required: []string{"path"},
