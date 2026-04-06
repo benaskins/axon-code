@@ -21,19 +21,25 @@ type FSTools struct {
 
 // NewFSTools constructs FSTools bound to projectDir.
 // Every path argument is resolved through sandbox.Resolve before any OS call.
-func NewFSTools(projectDir string) FSTools {
+// If goAST is true, read_file rejects .go files (use the ast tool instead).
+func NewFSTools(projectDir string, goAST ...bool) FSTools {
+	rejectGo := len(goAST) > 0 && goAST[0]
 	return FSTools{
-		ReadTool:  makeReadTool(projectDir),
+		ReadTool:  makeReadTool(projectDir, rejectGo),
 		WriteTool: makeWriteTool(projectDir),
 		EditTool:  makeEditTool(projectDir),
 		ListTool:  makeListTool(projectDir),
 	}
 }
 
-func makeReadTool(projectDir string) tool.ToolDef {
+func makeReadTool(projectDir string, rejectGo bool) tool.ToolDef {
+	desc := "Read a file within the project directory. Optional offset (0-based line index) and limit (number of lines) control the slice returned."
+	if rejectGo {
+		desc = "Read a non-Go file within the project directory (config, markdown, YAML, etc). For .go files, use the ast tool instead. Optional offset (0-based line index) and limit (number of lines) control the slice returned."
+	}
 	return tool.ToolDef{
 		Name:        "read_file",
-		Description: "Read a non-Go file within the project directory (config, markdown, YAML, etc). For .go files, use the ast tool instead. Optional offset (0-based line index) and limit (number of lines) control the slice returned.",
+		Description: desc,
 		Parameters: tool.ParameterSchema{
 			Type:     "object",
 			Required: []string{"path"},
@@ -47,6 +53,9 @@ func makeReadTool(projectDir string) tool.ToolDef {
 			path, ok := stringArg(a, "path")
 			if !ok {
 				return errResult("read_file: missing required arg 'path'")
+			}
+			if rejectGo && filepath.Ext(path) == ".go" {
+				return errResult("read_file: use the ast tool to read .go files, not read_file")
 			}
 			abs, err := sandbox.Resolve(projectDir, path)
 			if err != nil {

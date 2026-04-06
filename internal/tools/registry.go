@@ -18,7 +18,7 @@ func Build(projectDir string, cfg Config) ([]tool.ToolDef, *DoneSignal, error) {
 
 	signal := &DoneSignal{}
 
-	fs := NewFSTools(projectDir)
+	fs := NewFSTools(projectDir, cfg.GoAST)
 	search := NewSearchTools(projectDir)
 	gocmd := NewGoCmdTool(projectDir, timeout)
 	gitcmd := NewGitCmdTool(projectDir, timeout)
