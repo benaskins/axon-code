@@ -24,15 +24,13 @@ func NewGitCmdTool(projectDir string, defaultTimeout time.Duration) GitCmdTools 
 	}
 }
 
-// allowed git subcommands
+// allowed git subcommands (read-only: leads handle add/commit)
 var allowedGitSubcommands = map[string]bool{
-	"add":    true,
-	"commit": true,
-	"status": true,
-	"diff":   true,
-	"log":    true,
-	"branch": true,
-	"show":   true,
+	"status":    true,
+	"diff":      true,
+	"log":       true,
+	"branch":    true,
+	"show":      true,
 	"rev-parse": true,
 	"ls-files":  true,
 }
