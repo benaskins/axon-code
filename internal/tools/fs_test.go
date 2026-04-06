@@ -82,16 +82,16 @@ func TestWriteCreatesParentDirs(t *testing.T) {
 	}
 }
 
-// TestReadRejectsGoFiles verifies read_file rejects .go files.
-func TestReadRejectsGoFiles(t *testing.T) {
+// TestReadGoFiles verifies read_file can read .go files.
+func TestReadGoFiles(t *testing.T) {
 	dir := t.TempDir()
 	fs := tools.NewFSTools(dir)
 
-	fs.WriteTool.Execute(toolCtx(), args("path", "main.go", "content", "package main"))
+	fs.WriteTool.Execute(toolCtx(), args("path", "main.go", "content", "package main\n"))
 
 	result := fs.ReadTool.Execute(toolCtx(), args("path", "main.go"))
-	if !strings.Contains(result.Content, "ast tool") {
-		t.Errorf("expected rejection directing to ast tool, got: %s", result.Content)
+	if !strings.Contains(result.Content, "package main") {
+		t.Errorf("expected file content, got: %s", result.Content)
 	}
 }
 
