@@ -100,7 +100,35 @@ func (c *Coder) Implement(projectDir string, step plan.Step, feedback string) (s
 	if c.cfg.Verbose != nil {
 		w := c.cfg.Verbose
 		cb.OnToolUse = func(name string, args map[string]any) {
-			fmt.Fprintf(w, "tool: %s\n", name)
+			switch name {
+			case "read_file", "write_file", "edit_file", "ast", "rewrite":
+				path, _ := args["path"].(string)
+				if op, ok := args["operation"].(string); ok {
+					fmt.Fprintf(w, "tool: %s %s %s\n", name, op, path)
+				} else {
+					fmt.Fprintf(w, "tool: %s %s\n", name, path)
+				}
+			case "go_cmd", "git_cmd":
+				a, _ := args["args"].(string)
+				fmt.Fprintf(w, "tool: %s %s\n", name, a)
+			case "grep":
+				pattern, _ := args["pattern"].(string)
+				fmt.Fprintf(w, "tool: %s %q\n", name, pattern)
+			case "glob":
+				pattern, _ := args["pattern"].(string)
+				fmt.Fprintf(w, "tool: %s %s\n", name, pattern)
+			case "inspect_project":
+				path, _ := args["path"].(string)
+				fmt.Fprintf(w, "tool: %s %s\n", name, path)
+			case "done":
+				summary, _ := args["summary"].(string)
+				if len(summary) > 80 {
+					summary = summary[:80] + "..."
+				}
+				fmt.Fprintf(w, "tool: %s %s\n", name, summary)
+			default:
+				fmt.Fprintf(w, "tool: %s\n", name)
+			}
 		}
 	}
 
