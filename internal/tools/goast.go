@@ -206,63 +206,6 @@ func extractSource(fset *token.FileSet, node ast.Node, src []byte) string {
 	return string(src[start:end])
 }
 
-func formatFuncType(ft *ast.FuncType) string {
-	var sb strings.Builder
-	sb.WriteString("(")
-	sb.WriteString(formatFieldList(ft.Params))
-	sb.WriteString(")")
-	if ft.Results != nil && len(ft.Results.List) > 0 {
-		results := formatFieldList(ft.Results)
-		if len(ft.Results.List) == 1 && len(ft.Results.List[0].Names) == 0 {
-			sb.WriteString(" " + results)
-		} else {
-			sb.WriteString(" (" + results + ")")
-		}
-	}
-	return sb.String()
-}
-
-func formatFieldList(fl *ast.FieldList) string {
-	if fl == nil {
-		return ""
-	}
-	var parts []string
-	for _, field := range fl.List {
-		typeName := exprString(field.Type)
-		if len(field.Names) == 0 {
-			parts = append(parts, typeName)
-		} else {
-			var names []string
-			for _, n := range field.Names {
-				names = append(names, n.Name)
-			}
-			parts = append(parts, strings.Join(names, ", ")+" "+typeName)
-		}
-	}
-	return strings.Join(parts, ", ")
-}
-
-func exprString(expr ast.Expr) string {
-	switch e := expr.(type) {
-	case *ast.Ident:
-		return e.Name
-	case *ast.StarExpr:
-		return "*" + exprString(e.X)
-	case *ast.SelectorExpr:
-		return exprString(e.X) + "." + e.Sel.Name
-	case *ast.ArrayType:
-		return "[]" + exprString(e.Elt)
-	case *ast.MapType:
-		return "map[" + exprString(e.Key) + "]" + exprString(e.Value)
-	case *ast.InterfaceType:
-		return "interface{}"
-	case *ast.Ellipsis:
-		return "..." + exprString(e.Elt)
-	default:
-		return fmt.Sprintf("%T", expr)
-	}
-}
-
 // doRename renames all occurrences of target to name within the file.
 func doRename(fset *token.FileSet, f *ast.File, a map[string]any) error {
 	target, ok := stringArg(a, "target")
