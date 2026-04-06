@@ -95,7 +95,7 @@ func makeGoCmdTool(projectDir string, defaultTimeout time.Duration) tool.ToolDef
 
 			err := cmd.Run()
 
-			result := BashResult{
+			result := CmdResult{
 				Stdout: stdout.String(),
 				Stderr: stderr.String(),
 			}

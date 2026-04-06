@@ -15,6 +15,7 @@ import (
 type FSTools struct {
 	ReadTool  tool.ToolDef
 	WriteTool tool.ToolDef
+	EditTool  tool.ToolDef
 	ListTool  tool.ToolDef
 }
 
@@ -25,6 +26,7 @@ func NewFSTools(projectDir string) FSTools {
 	return FSTools{
 		ReadTool:  makeReadTool(projectDir),
 		WriteTool: makeWriteTool(projectDir),
+		EditTool:  makeEditTool(projectDir),
 		ListTool:  makeListTool(projectDir),
 	}
 }
@@ -118,6 +120,53 @@ func makeWriteTool(projectDir string) tool.ToolDef {
 	}
 }
 
+func makeEditTool(projectDir string) tool.ToolDef {
+	return tool.ToolDef{
+		Name:        "edit_file",
+		Description: "Replace the first occurrence of old_string with new_string in a file. Works on any file type. For structural Go changes (rename, replace function body), prefer the rewrite tool.",
+		Parameters: tool.ParameterSchema{
+			Type:     "object",
+			Required: []string{"path", "old_string", "new_string"},
+			Properties: map[string]tool.PropertySchema{
+				"path":       {Type: "string", Description: "Path relative to the project directory."},
+				"old_string": {Type: "string", Description: "Exact string to replace."},
+				"new_string": {Type: "string", Description: "Replacement string."},
+			},
+		},
+		Execute: func(ctx *tool.ToolContext, a map[string]any) tool.ToolResult {
+			path, ok := stringArg(a, "path")
+			if !ok {
+				return errResult("edit_file: missing required arg 'path'")
+			}
+			oldStr, ok := stringArg(a, "old_string")
+			if !ok {
+				return errResult("edit_file: missing required arg 'old_string'")
+			}
+			newStr, ok := stringArg(a, "new_string")
+			if !ok {
+				return errResult("edit_file: missing required arg 'new_string'")
+			}
+			abs, err := sandbox.Resolve(projectDir, path)
+			if err != nil {
+				return errResult("edit_file: " + err.Error())
+			}
+			data, err := os.ReadFile(abs)
+			if err != nil {
+				return errResult("edit_file: " + err.Error())
+			}
+			original := string(data)
+			if !strings.Contains(original, oldStr) {
+				return errResult(fmt.Sprintf("edit_file: old_string not found in %s", path))
+			}
+			updated := strings.Replace(original, oldStr, newStr, 1)
+			if err := os.WriteFile(abs, []byte(updated), 0o644); err != nil {
+				return errResult("edit_file: " + err.Error())
+			}
+			return tool.ToolResult{Content: fmt.Sprintf("edited %s", path)}
+		},
+	}
+}
+
 func makeListTool(projectDir string) tool.ToolDef {
 	return tool.ToolDef{
 		Name:        "list_dir",
@@ -185,4 +234,11 @@ func intArg(a map[string]any, key string, def int) int {
 
 func errResult(msg string) tool.ToolResult {
 	return tool.ToolResult{Content: "error: " + msg}
+}
+
+// CmdResult is a JSON-serializable command execution result used by go_cmd and git_cmd.
+type CmdResult struct {
+	Stdout   string `json:"stdout"`
+	Stderr   string `json:"stderr"`
+	ExitCode int    `json:"exit_code"`
 }

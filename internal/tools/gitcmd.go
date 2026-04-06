@@ -91,7 +91,7 @@ func makeGitCmdTool(projectDir string, defaultTimeout time.Duration) tool.ToolDe
 
 			err := cmd.Run()
 
-			result := BashResult{
+			result := CmdResult{
 				Stdout: stdout.String(),
 				Stderr: stderr.String(),
 			}

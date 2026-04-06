@@ -36,6 +36,7 @@ func Build(projectDir string, cfg Config) ([]tool.ToolDef, *DoneSignal, error) {
 		goast.RewriteTool,
 		fs.ReadTool,
 		fs.WriteTool,
+		fs.EditTool,
 		fs.ListTool,
 		search.GrepTool,
 		search.GlobTool,

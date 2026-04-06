@@ -18,7 +18,7 @@ func TestGoCmdVersion(t *testing.T) {
 		t.Fatalf("go_cmd unexpectedly errored: %s", result.Content)
 	}
 
-	var out tools.BashResult
+	var out tools.CmdResult
 	if err := json.Unmarshal([]byte(result.Content), &out); err != nil {
 		t.Fatalf("expected JSON output, got: %s (%v)", result.Content, err)
 	}
@@ -66,7 +66,7 @@ func TestGoCmdCwdIsProjectDir(t *testing.T) {
 		t.Fatalf("go_cmd unexpectedly errored: %s", result.Content)
 	}
 
-	var out tools.BashResult
+	var out tools.CmdResult
 	if err := json.Unmarshal([]byte(result.Content), &out); err != nil {
 		t.Fatalf("expected JSON output, got: %s (%v)", result.Content, err)
 	}
