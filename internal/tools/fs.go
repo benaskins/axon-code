@@ -21,12 +21,12 @@ type FSTools struct {
 
 // NewFSTools constructs FSTools bound to projectDir.
 // Every path argument is resolved through sandbox.Resolve before any OS call.
-// read_file rejects .go files (use the ast tool instead).
-func NewFSTools(projectDir string) FSTools {
+// The manifest tracks files modified by write_file and edit_file.
+func NewFSTools(projectDir string, manifest *Manifest) FSTools {
 	return FSTools{
 		ReadTool:  makeReadTool(projectDir),
-		WriteTool: makeWriteTool(projectDir),
-		EditTool:  makeEditTool(projectDir),
+		WriteTool: makeWriteTool(projectDir, manifest),
+		EditTool:  makeEditTool(projectDir, manifest),
 		ListTool:  makeListTool(projectDir),
 	}
 }
@@ -81,7 +81,7 @@ func makeReadTool(projectDir string) tool.ToolDef {
 	}
 }
 
-func makeWriteTool(projectDir string) tool.ToolDef {
+func makeWriteTool(projectDir string, manifest *Manifest) tool.ToolDef {
 	return tool.ToolDef{
 		Name:        "write_file",
 		Description: "Write content to a file within the project directory. Parent directories are created if they do not exist.",
@@ -112,12 +112,13 @@ func makeWriteTool(projectDir string) tool.ToolDef {
 			if err := os.WriteFile(abs, []byte(content), 0o644); err != nil {
 				return errResult("write_file: " + err.Error())
 			}
+			manifest.Track(path)
 			return tool.ToolResult{Content: fmt.Sprintf("wrote %d bytes to %s", len(content), path)}
 		},
 	}
 }
 
-func makeEditTool(projectDir string) tool.ToolDef {
+func makeEditTool(projectDir string, manifest *Manifest) tool.ToolDef {
 	return tool.ToolDef{
 		Name:        "edit_file",
 		Description: "Replace the first occurrence of old_string with new_string in a file. Works on any file type. For structural Go changes (rename, replace function body), prefer the rewrite tool.",
@@ -159,6 +160,7 @@ func makeEditTool(projectDir string) tool.ToolDef {
 			if err := os.WriteFile(abs, []byte(updated), 0o644); err != nil {
 				return errResult("edit_file: " + err.Error())
 			}
+			manifest.Track(path)
 			return tool.ToolResult{Content: fmt.Sprintf("edited %s", path)}
 		},
 	}

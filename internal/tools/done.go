@@ -8,10 +8,36 @@ import (
 )
 
 // DoneSignal is populated by the done tool when the agent signals completion.
-// The caller inspects Done and Summary after the loop exits.
+// The caller inspects Done, Summary, and Files after the loop exits.
 type DoneSignal struct {
 	Done    bool
 	Summary string
+	Files   []string // paths modified during this session (relative to project dir)
+}
+
+// Manifest tracks files modified by tool execution.
+// It is shared across write_file, edit_file, and rewrite tools.
+type Manifest struct {
+	files map[string]bool
+}
+
+// NewManifest creates an empty file manifest.
+func NewManifest() *Manifest {
+	return &Manifest{files: make(map[string]bool)}
+}
+
+// Track records a file path as modified.
+func (m *Manifest) Track(path string) {
+	m.files[path] = true
+}
+
+// Files returns the deduplicated list of modified file paths.
+func (m *Manifest) Files() []string {
+	out := make([]string, 0, len(m.files))
+	for f := range m.files {
+		out = append(out, f)
+	}
+	return out
 }
 
 // NewDoneTool returns a ToolDef for the done tool bound to signal.
@@ -37,6 +63,17 @@ func NewDoneTool(signal *DoneSignal) tool.ToolDef {
 			return tool.ToolResult{Content: fmt.Sprintf("done: %s", summary)}
 		},
 	}
+}
+
+// newDoneToolWithManifest returns a done tool that copies the manifest into the signal.
+func newDoneToolWithManifest(signal *DoneSignal, manifest *Manifest) tool.ToolDef {
+	td := NewDoneTool(signal)
+	origExec := td.Execute
+	td.Execute = func(ctx *tool.ToolContext, a map[string]any) tool.ToolResult {
+		signal.Files = manifest.Files()
+		return origExec(ctx, a)
+	}
+	return td
 }
 
 // Config carries tool-level configuration for the registry builder.

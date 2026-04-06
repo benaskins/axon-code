@@ -57,14 +57,14 @@ func (c *Coder) Config() Config {
 // Implement runs the coding agent loop for the given plan step.
 // It builds the tool registry, assembles the system prompt, runs axon-loop,
 // and returns the done summary on success.
-func (c *Coder) Implement(projectDir string, step plan.Step, feedback string) (string, error) {
+func (c *Coder) Implement(projectDir string, step plan.Step, feedback string) (*ImplementResult, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), c.cfg.Timeout)
 	defer cancel()
 
 	// Build tools bound to projectDir.
 	toolDefs, signal, err := internaltools.Build(projectDir, internaltools.Config{})
 	if err != nil {
-		return "", fmt.Errorf("implement: build tools: %w", err)
+		return nil, fmt.Errorf("implement: build tools: %w", err)
 	}
 
 	// Convert slice to map as required by loop.RunConfig.
@@ -143,12 +143,15 @@ func (c *Coder) Implement(projectDir string, step plan.Step, feedback string) (s
 	// If the done tool was called, return the summary regardless of loop error
 	// (context cancellation is expected when done exits the loop early).
 	if signal.Done {
-		return signal.Summary, nil
+		return &ImplementResult{
+			Summary: signal.Summary,
+			Files:   signal.Files,
+		}, nil
 	}
 
 	if loopErr != nil {
-		return "", fmt.Errorf("implement: %w", loopErr)
+		return nil, fmt.Errorf("implement: %w", loopErr)
 	}
 
-	return "", fmt.Errorf("implement: loop completed without done signal")
+	return nil, fmt.Errorf("implement: loop completed without done signal")
 }

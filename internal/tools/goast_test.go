@@ -51,7 +51,7 @@ func execTool(t *testing.T, td tool.ToolDef, args map[string]any) string {
 
 func TestInspect(t *testing.T) {
 	dir := setupGoProject(t)
-	tools := NewGoASTTools(dir)
+	tools := NewGoASTTools(dir, NewManifest())
 
 	out := execTool(t, tools.InspectTool, map[string]any{"path": "calc.go"})
 
@@ -78,7 +78,7 @@ func TestInspect(t *testing.T) {
 func TestInspect_NonGoFile(t *testing.T) {
 	dir := t.TempDir()
 	os.WriteFile(filepath.Join(dir, "config.yaml"), []byte("key: value"), 0o644)
-	tools := NewGoASTTools(dir)
+	tools := NewGoASTTools(dir, NewManifest())
 
 	result := tools.InspectTool.Execute(&tool.ToolContext{}, map[string]any{"path": "config.yaml"})
 	if !strings.Contains(result.Content, "not a .go file") {
@@ -88,7 +88,7 @@ func TestInspect_NonGoFile(t *testing.T) {
 
 func TestRename(t *testing.T) {
 	dir := setupGoProject(t)
-	tools := NewGoASTTools(dir)
+	tools := NewGoASTTools(dir, NewManifest())
 
 	execTool(t, tools.RewriteTool, map[string]any{
 		"path":      "calc.go",
@@ -111,7 +111,7 @@ func TestRename(t *testing.T) {
 
 func TestReplaceBody(t *testing.T) {
 	dir := setupGoProject(t)
-	tools := NewGoASTTools(dir)
+	tools := NewGoASTTools(dir, NewManifest())
 
 	execTool(t, tools.RewriteTool, map[string]any{
 		"path":      "calc.go",
@@ -134,7 +134,7 @@ func TestReplaceBody(t *testing.T) {
 
 func TestReplaceReturn(t *testing.T) {
 	dir := setupGoProject(t)
-	tools := NewGoASTTools(dir)
+	tools := NewGoASTTools(dir, NewManifest())
 
 	execTool(t, tools.RewriteTool, map[string]any{
 		"path":      "calc.go",
@@ -157,7 +157,7 @@ func TestReplaceReturn(t *testing.T) {
 
 func TestChangeSignature(t *testing.T) {
 	dir := setupGoProject(t)
-	tools := NewGoASTTools(dir)
+	tools := NewGoASTTools(dir, NewManifest())
 
 	execTool(t, tools.RewriteTool, map[string]any{
 		"path":      "calc.go",
@@ -176,7 +176,7 @@ func TestChangeSignature(t *testing.T) {
 
 func TestRename_NotFound(t *testing.T) {
 	dir := setupGoProject(t)
-	tools := NewGoASTTools(dir)
+	tools := NewGoASTTools(dir, NewManifest())
 
 	result := tools.RewriteTool.Execute(&tool.ToolContext{}, map[string]any{
 		"path":      "calc.go",
@@ -191,7 +191,7 @@ func TestRename_NotFound(t *testing.T) {
 
 func TestReplaceBody_InvalidCode(t *testing.T) {
 	dir := setupGoProject(t)
-	tools := NewGoASTTools(dir)
+	tools := NewGoASTTools(dir, NewManifest())
 
 	result := tools.RewriteTool.Execute(&tool.ToolContext{}, map[string]any{
 		"path":      "calc.go",

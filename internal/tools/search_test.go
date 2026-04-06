@@ -11,7 +11,7 @@ import (
 // TestGrepFindsPatternInNestedFiles verifies grep finds matching lines in nested files.
 func TestGrepFindsPatternInNestedFiles(t *testing.T) {
 	dir := t.TempDir()
-	fs := tools.NewFSTools(dir)
+	fs := tools.NewFSTools(dir, tools.NewManifest())
 	st := tools.NewSearchTools(dir)
 
 	fs.WriteTool.Execute(toolCtx(), args("path", "top.txt", "content", "hello world\nskip me\n"))
@@ -35,7 +35,7 @@ func TestGrepFindsPatternInNestedFiles(t *testing.T) {
 // TestGrepFileTypeFilter verifies grep filters by file extension.
 func TestGrepFileTypeFilter(t *testing.T) {
 	dir := t.TempDir()
-	fs := tools.NewFSTools(dir)
+	fs := tools.NewFSTools(dir, tools.NewManifest())
 	st := tools.NewSearchTools(dir)
 
 	fs.WriteTool.Execute(toolCtx(), args("path", "main.go", "content", "package main // target\n"))
@@ -53,7 +53,7 @@ func TestGrepFileTypeFilter(t *testing.T) {
 // TestGrepNoMatch verifies grep returns empty content when no lines match.
 func TestGrepNoMatch(t *testing.T) {
 	dir := t.TempDir()
-	fs := tools.NewFSTools(dir)
+	fs := tools.NewFSTools(dir, tools.NewManifest())
 	st := tools.NewSearchTools(dir)
 
 	fs.WriteTool.Execute(toolCtx(), args("path", "data.txt", "content", "nothing here\n"))
@@ -78,7 +78,7 @@ func TestGrepTraversalRejected(t *testing.T) {
 // TestGlobMatchesExpectedFiles verifies glob returns matching file paths.
 func TestGlobMatchesExpectedFiles(t *testing.T) {
 	dir := t.TempDir()
-	fs := tools.NewFSTools(dir)
+	fs := tools.NewFSTools(dir, tools.NewManifest())
 	st := tools.NewSearchTools(dir)
 
 	fs.WriteTool.Execute(toolCtx(), args("path", "a.go", "content", "a"))

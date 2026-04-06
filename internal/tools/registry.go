@@ -15,6 +15,10 @@ const defaultBashTimeout = 30 * time.Second
 // read_file for non-Go files (config, markdown, YAML), write_file for creating
 // or overwriting files. All Go toolchain and git operations go through go_cmd
 // and git_cmd respectively.
+//
+// Tools that modify files (write_file, edit_file, rewrite) track their changes
+// in a manifest. After the loop exits, DoneSignal.Files contains the list of
+// modified paths.
 func Build(projectDir string, cfg Config) ([]tool.ToolDef, *DoneSignal, error) {
 	timeout := cfg.BashTimeout
 	if timeout <= 0 {
@@ -22,14 +26,15 @@ func Build(projectDir string, cfg Config) ([]tool.ToolDef, *DoneSignal, error) {
 	}
 
 	signal := &DoneSignal{}
+	manifest := NewManifest()
 
-	fs := NewFSTools(projectDir)
+	fs := NewFSTools(projectDir, manifest)
 	search := NewSearchTools(projectDir)
-	goast := NewGoASTTools(projectDir)
+	goast := NewGoASTTools(projectDir, manifest)
 	gocmd := NewGoCmdTool(projectDir, timeout)
 	gitcmd := NewGitCmdTool(projectDir, timeout)
 	domain := NewDomainTools(projectDir)
-	done := NewDoneTool(signal)
+	done := newDoneToolWithManifest(signal, manifest)
 
 	tools := []tool.ToolDef{
 		goast.InspectTool,

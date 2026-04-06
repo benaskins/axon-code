@@ -22,10 +22,11 @@ type GoASTTools struct {
 }
 
 // NewGoASTTools constructs GoASTTools bound to projectDir.
-func NewGoASTTools(projectDir string) GoASTTools {
+// The manifest tracks files modified by the rewrite tool.
+func NewGoASTTools(projectDir string, manifest *Manifest) GoASTTools {
 	return GoASTTools{
 		InspectTool: makeInspectTool(projectDir),
-		RewriteTool: makeRewriteTool(projectDir),
+		RewriteTool: makeRewriteTool(projectDir, manifest),
 	}
 }
 
@@ -69,7 +70,7 @@ func makeInspectTool(projectDir string) tool.ToolDef {
 	}
 }
 
-func makeRewriteTool(projectDir string) tool.ToolDef {
+func makeRewriteTool(projectDir string, manifest *Manifest) tool.ToolDef {
 	return tool.ToolDef{
 		Name: "rewrite",
 		Description: `Perform a structural rewrite on a single Go source file. Each call operates on one file only. To rename across multiple files, call rewrite once per file.
@@ -145,6 +146,7 @@ The file is reformatted with gofmt after rewriting.`,
 				return errResult("rewrite: format error: " + err.Error())
 			}
 
+			manifest.Track(path)
 			return tool.ToolResult{Content: fmt.Sprintf("rewrote %s in %s", op, path)}
 		},
 	}

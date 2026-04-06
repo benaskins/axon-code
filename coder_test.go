@@ -126,12 +126,15 @@ func TestImplement_WritesFileAndReturnsSummary(t *testing.T) {
 		Description: "Write hello world into hello.txt.",
 	}
 
-	summary, err := coder.Implement(dir, step, "")
+	result, err := coder.Implement(dir, step, "")
 	if err != nil {
 		t.Fatalf("Implement returned error: %v", err)
 	}
-	if summary != "wrote hello.txt with greeting" {
-		t.Errorf("summary = %q, want %q", summary, "wrote hello.txt with greeting")
+	if result.Summary != "wrote hello.txt with greeting" {
+		t.Errorf("summary = %q, want %q", result.Summary, "wrote hello.txt with greeting")
+	}
+	if len(result.Files) == 0 {
+		t.Error("expected at least one file in manifest")
 	}
 
 	data, readErr := os.ReadFile(filepath.Join(dir, "hello.txt"))
