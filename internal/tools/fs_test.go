@@ -82,34 +82,16 @@ func TestWriteCreatesParentDirs(t *testing.T) {
 	}
 }
 
-// TestEditReplaceFirstOccurrence verifies edit_file replaces the first occurrence.
-func TestEditReplaceFirstOccurrence(t *testing.T) {
+// TestReadRejectsGoFiles verifies read_file rejects .go files.
+func TestReadRejectsGoFiles(t *testing.T) {
 	dir := t.TempDir()
 	fs := tools.NewFSTools(dir)
 
-	fs.WriteTool.Execute(toolCtx(), args("path", "code.go", "content", "foo foo bar"))
+	fs.WriteTool.Execute(toolCtx(), args("path", "main.go", "content", "package main"))
 
-	result := fs.EditTool.Execute(toolCtx(), args("path", "code.go", "old_string", "foo", "new_string", "baz"))
-	if strings.Contains(result.Content, "error") {
-		t.Fatalf("edit_file failed: %s", result.Content)
-	}
-
-	readResult := fs.ReadTool.Execute(toolCtx(), args("path", "code.go"))
-	if !strings.Contains(readResult.Content, "baz foo bar") {
-		t.Errorf("expected 'baz foo bar', got: %s", readResult.Content)
-	}
-}
-
-// TestEditErrorOnMissingOldString verifies edit_file errors when old_string not found.
-func TestEditErrorOnMissingOldString(t *testing.T) {
-	dir := t.TempDir()
-	fs := tools.NewFSTools(dir)
-
-	fs.WriteTool.Execute(toolCtx(), args("path", "code.go", "content", "hello world"))
-
-	result := fs.EditTool.Execute(toolCtx(), args("path", "code.go", "old_string", "notfound", "new_string", "replacement"))
-	if !strings.Contains(result.Content, "error") && !strings.Contains(result.Content, "not found") {
-		t.Errorf("expected error for missing old_string, got: %s", result.Content)
+	result := fs.ReadTool.Execute(toolCtx(), args("path", "main.go"))
+	if !strings.Contains(result.Content, "ast tool") {
+		t.Errorf("expected rejection directing to ast tool, got: %s", result.Content)
 	}
 }
 
@@ -148,7 +130,7 @@ func TestListDirTypeLabels(t *testing.T) {
 	}
 }
 
-// TestTraversalRejected verifies all tools reject path traversal.
+// TestTraversalRejected verifies tools reject path traversal.
 func TestTraversalRejected(t *testing.T) {
 	dir := t.TempDir()
 	fs := tools.NewFSTools(dir)
@@ -161,7 +143,6 @@ func TestTraversalRejected(t *testing.T) {
 	}{
 		{"read_file", fs.ReadTool.Execute(toolCtx(), args("path", escapePath))},
 		{"write_file", fs.WriteTool.Execute(toolCtx(), args("path", escapePath, "content", "x"))},
-		{"edit_file", fs.EditTool.Execute(toolCtx(), args("path", escapePath, "old_string", "a", "new_string", "b"))},
 		{"list_dir", fs.ListTool.Execute(toolCtx(), args("path", escapePath))},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

@@ -44,8 +44,4 @@ type Config struct {
 	// BashTimeout is the default execution timeout for the bash tool.
 	// If zero, a 30-second default is applied.
 	BashTimeout time.Duration
-
-	// GoAST enables AST-aware tools (ast, rewrite) for Go source files.
-	// When true, these tools are added alongside the standard file tools.
-	GoAST bool
 }

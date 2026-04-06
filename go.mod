@@ -6,6 +6,11 @@ require (
 	github.com/benaskins/axon-loop v0.7.5
 	github.com/benaskins/axon-talk v0.9.0
 	github.com/benaskins/axon-tool v0.3.0
+	golang.org/x/tools v0.43.0
 )
 
-require github.com/benaskins/axon-tape v0.1.1 // indirect
+require (
+	github.com/benaskins/axon-tape v0.1.1 // indirect
+	golang.org/x/mod v0.34.0 // indirect
+	golang.org/x/sync v0.20.0 // indirect
+)

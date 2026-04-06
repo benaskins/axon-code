@@ -11,35 +11,28 @@ import (
 	"github.com/benaskins/axon-code/internal/sandbox"
 )
 
-// FSTools holds the four file-system ToolDefs bound to a project directory.
+// FSTools holds the file-system ToolDefs bound to a project directory.
 type FSTools struct {
 	ReadTool  tool.ToolDef
 	WriteTool tool.ToolDef
-	EditTool  tool.ToolDef
 	ListTool  tool.ToolDef
 }
 
 // NewFSTools constructs FSTools bound to projectDir.
 // Every path argument is resolved through sandbox.Resolve before any OS call.
-// If goAST is true, read_file rejects .go files (use the ast tool instead).
-func NewFSTools(projectDir string, goAST ...bool) FSTools {
-	rejectGo := len(goAST) > 0 && goAST[0]
+// read_file rejects .go files (use the ast tool instead).
+func NewFSTools(projectDir string) FSTools {
 	return FSTools{
-		ReadTool:  makeReadTool(projectDir, rejectGo),
+		ReadTool:  makeReadTool(projectDir),
 		WriteTool: makeWriteTool(projectDir),
-		EditTool:  makeEditTool(projectDir),
 		ListTool:  makeListTool(projectDir),
 	}
 }
 
-func makeReadTool(projectDir string, rejectGo bool) tool.ToolDef {
-	desc := "Read a file within the project directory. Optional offset (0-based line index) and limit (number of lines) control the slice returned."
-	if rejectGo {
-		desc = "Read a non-Go file within the project directory (config, markdown, YAML, etc). For .go files, use the ast tool instead. Optional offset (0-based line index) and limit (number of lines) control the slice returned."
-	}
+func makeReadTool(projectDir string) tool.ToolDef {
 	return tool.ToolDef{
 		Name:        "read_file",
-		Description: desc,
+		Description: "Read a non-Go file within the project directory (config, markdown, YAML, etc). For .go files, use the ast tool instead. Optional offset (0-based line index) and limit (number of lines) control the slice returned.",
 		Parameters: tool.ParameterSchema{
 			Type:     "object",
 			Required: []string{"path"},
@@ -54,7 +47,7 @@ func makeReadTool(projectDir string, rejectGo bool) tool.ToolDef {
 			if !ok {
 				return errResult("read_file: missing required arg 'path'")
 			}
-			if rejectGo && filepath.Ext(path) == ".go" {
+			if filepath.Ext(path) == ".go" {
 				return errResult("read_file: use the ast tool to read .go files, not read_file")
 			}
 			abs, err := sandbox.Resolve(projectDir, path)
@@ -121,53 +114,6 @@ func makeWriteTool(projectDir string) tool.ToolDef {
 				return errResult("write_file: " + err.Error())
 			}
 			return tool.ToolResult{Content: fmt.Sprintf("wrote %d bytes to %s", len(content), path)}
-		},
-	}
-}
-
-func makeEditTool(projectDir string) tool.ToolDef {
-	return tool.ToolDef{
-		Name:        "edit_file",
-		Description: "Replace the first occurrence of old_string with new_string in a file. Returns an error if old_string is not found.",
-		Parameters: tool.ParameterSchema{
-			Type:     "object",
-			Required: []string{"path", "old_string", "new_string"},
-			Properties: map[string]tool.PropertySchema{
-				"path":       {Type: "string", Description: "Path relative to the project directory."},
-				"old_string": {Type: "string", Description: "Exact string to replace."},
-				"new_string": {Type: "string", Description: "Replacement string."},
-			},
-		},
-		Execute: func(ctx *tool.ToolContext, a map[string]any) tool.ToolResult {
-			path, ok := stringArg(a, "path")
-			if !ok {
-				return errResult("edit_file: missing required arg 'path'")
-			}
-			oldStr, ok := stringArg(a, "old_string")
-			if !ok {
-				return errResult("edit_file: missing required arg 'old_string'")
-			}
-			newStr, ok := stringArg(a, "new_string")
-			if !ok {
-				return errResult("edit_file: missing required arg 'new_string'")
-			}
-			abs, err := sandbox.Resolve(projectDir, path)
-			if err != nil {
-				return errResult("edit_file: " + err.Error())
-			}
-			data, err := os.ReadFile(abs)
-			if err != nil {
-				return errResult("edit_file: " + err.Error())
-			}
-			original := string(data)
-			if !strings.Contains(original, oldStr) {
-				return errResult(fmt.Sprintf("edit_file: old_string not found in %s", path))
-			}
-			updated := strings.Replace(original, oldStr, newStr, 1)
-			if err := os.WriteFile(abs, []byte(updated), 0o644); err != nil {
-				return errResult("edit_file: " + err.Error())
-			}
-			return tool.ToolResult{Content: fmt.Sprintf("edited %s", path)}
 		},
 	}
 }

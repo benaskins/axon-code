@@ -6,3 +6,11 @@ github.com/benaskins/axon-tape v0.1.1 h1:ZL/QJ3TQjEtcXtozp0Ww9GbuzOLRsnFIzHjV7vQ
 github.com/benaskins/axon-tape v0.1.1/go.mod h1:j7B7BlQjvqX+U5djQooLIYRZ0Njvvgj/QQGTkPzm2ag=
 github.com/benaskins/axon-tool v0.3.0 h1:YWdTbcxnE95yjp9i5BI8RyN56fyWAT9Wk57oYflfyxI=
 github.com/benaskins/axon-tool v0.3.0/go.mod h1:LnCeTvAo8vsI+XF4YBIt4YV1Mtpx3WImGurFRs2W0s4=
+github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
+github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
+golang.org/x/mod v0.34.0 h1:xIHgNUUnW6sYkcM5Jleh05DvLOtwc6RitGHbDk4akRI=
+golang.org/x/mod v0.34.0/go.mod h1:ykgH52iCZe79kzLLMhyCUzhMci+nQj+0XkbXpNYtVjY=
+golang.org/x/sync v0.20.0 h1:e0PTpb7pjO8GAtTs2dQ6jYa5BWYlMuX047Dco/pItO4=
+golang.org/x/sync v0.20.0/go.mod h1:9xrNwdLfx4jkKbNva9FpL6vEN7evnE43NNNJQ2LF3+0=
+golang.org/x/tools v0.43.0 h1:12BdW9CeB3Z+J/I/wj34VMl8X+fEXBxVR90JeMX5E7s=
+golang.org/x/tools v0.43.0/go.mod h1:uHkMso649BX2cZK6+RpuIPXS3ho2hZo4FVwfoy1vIk0=
