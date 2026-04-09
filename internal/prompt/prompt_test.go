@@ -145,6 +145,13 @@ func TestBuild_Gemini_DoneEnforcedAtEnd(t *testing.T) {
 	}
 }
 
+func TestForModel_Gemini_ToolChoiceAuto(t *testing.T) {
+	p := prompt.ForModel("google/gemini-2.5-flash")
+	if p.ToolChoice != "auto" {
+		t.Errorf("expected ToolChoice auto, got %q", p.ToolChoice)
+	}
+}
+
 func TestBuild_Gemini_ExcludesEditAndRewrite(t *testing.T) {
 	p := prompt.ForModel("google/gemini-2.5-flash")
 	found := map[string]bool{}

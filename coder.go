@@ -106,9 +106,12 @@ func (c *Coder) Implement(projectDir string, step plan.Step, feedback string) (*
 	if c.cfg.SessionID != "" {
 		opts["session_id"] = c.cfg.SessionID
 	}
-	// Apply temperature override from profile (e.g. Gemini needs 1.0).
+	// Apply profile overrides (e.g. Gemini needs temp 1.0 and tool_choice auto).
 	if profile.Temperature != nil {
 		opts["temperature"] = *profile.Temperature
+	}
+	if profile.ToolChoice != "" {
+		opts["tool_choice"] = profile.ToolChoice
 	}
 
 	req := &loop.Request{

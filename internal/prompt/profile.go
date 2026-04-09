@@ -17,6 +17,8 @@ type Profile struct {
 	Family       Family
 	Temperature  *float64 // nil = use caller's setting, non-nil = override
 	ExcludeTools []string // tool names to filter out
+	ToolChoice   string   // "auto", "required", or "" to omit
+	Stream       *bool    // nil = use caller's setting, non-nil = override
 }
 
 // ForModel returns the appropriate profile for the given model string.
@@ -31,6 +33,8 @@ func ForModel(model string) Profile {
 			// Gemini thrashes between edit_file and rewrite. Expose only
 			// write_file for mutations and ast for reading Go structure.
 			ExcludeTools: []string{"edit_file", "rewrite"},
+			// Gemini won't call tools unless explicitly told to.
+			ToolChoice: "auto",
 		}
 	case strings.Contains(m, "claude") || strings.Contains(m, "anthropic"):
 		return Profile{Family: FamilyAnthropic}
