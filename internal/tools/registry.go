@@ -47,7 +47,6 @@ func Build(projectDir string, cfg Config) ([]tool.ToolDef, *DoneSignal, error) {
 		search.GlobTool,
 		gocmd.GoCmdTool,
 		gitcmd.GitCmdTool,
-		domain.SummariseProjectTool,
 		domain.InspectProjectTool,
 		done,
 	}
