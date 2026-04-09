@@ -21,6 +21,7 @@ type Config struct {
 	MaxIterations      int
 	Timeout            time.Duration
 	SystemPromptPrefix string
+	SessionID          string
 	Verbose            io.Writer
 }
 
@@ -87,6 +88,11 @@ func (c *Coder) Implement(projectDir string, step plan.Step, feedback string) (*
 
 	systemPrompt := prompt.Build(c.cfg.SystemPromptPrefix, step, feedback)
 
+	opts := map[string]any{}
+	if c.cfg.SessionID != "" {
+		opts["session_id"] = c.cfg.SessionID
+	}
+
 	req := &loop.Request{
 		Model: c.cfg.Model,
 		Messages: []loop.Message{
@@ -94,6 +100,7 @@ func (c *Coder) Implement(projectDir string, step plan.Step, feedback string) (*
 			{Role: loop.RoleUser, Content: step.Title + ": " + step.Description},
 		},
 		MaxIterations: c.cfg.MaxIterations,
+		Options:       opts,
 	}
 
 	var cb loop.Callbacks

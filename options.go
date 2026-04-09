@@ -25,6 +25,11 @@ func WithSystemPromptPrefix(s string) Option {
 	return func(c *Config) { c.SystemPromptPrefix = s }
 }
 
+// WithSessionID sets the OpenRouter session ID for request grouping.
+func WithSessionID(id string) Option {
+	return func(c *Config) { c.SessionID = id }
+}
+
 // WithVerbose sets the writer for verbose tool-use logging.
 func WithVerbose(w io.Writer) Option {
 	return func(c *Config) { c.Verbose = w }
