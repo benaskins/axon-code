@@ -86,11 +86,29 @@ func (c *Coder) Implement(projectDir string, step plan.Step, feedback string) (*
 		toolMap["done"] = doneTool
 	}
 
-	systemPrompt := prompt.Build(c.cfg.SystemPromptPrefix, step, feedback)
+	profile := prompt.ForModel(c.cfg.Model)
+	systemPrompt := prompt.Build(c.cfg.SystemPromptPrefix, step, feedback, profile)
+
+	// Filter tools based on profile (e.g. Gemini excludes edit_file, rewrite).
+	if len(profile.ExcludeTools) > 0 {
+		exclude := make(map[string]bool, len(profile.ExcludeTools))
+		for _, name := range profile.ExcludeTools {
+			exclude[name] = true
+		}
+		for name := range toolMap {
+			if exclude[name] {
+				delete(toolMap, name)
+			}
+		}
+	}
 
 	opts := map[string]any{}
 	if c.cfg.SessionID != "" {
 		opts["session_id"] = c.cfg.SessionID
+	}
+	// Apply temperature override from profile (e.g. Gemini needs 1.0).
+	if profile.Temperature != nil {
+		opts["temperature"] = *profile.Temperature
 	}
 
 	req := &loop.Request{
