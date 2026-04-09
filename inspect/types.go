@@ -7,6 +7,8 @@ import (
 	"go/parser"
 	"go/token"
 	"go/types"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"golang.org/x/tools/go/packages"
@@ -134,29 +136,27 @@ func ExtractInterfaces(dir string) ([]ExportedInterface, error) {
 	return interfaces, nil
 }
 
-// extractInterfacesFallback uses parser.ParseDir as a fallback when go/packages fails.
+// extractInterfacesFallback parses Go files directly as a fallback when go/packages fails.
 // This is needed for testdata directories and other edge cases.
 func extractInterfacesFallback(dir string) ([]ExportedInterface, error) {
 	fset := token.NewFileSet()
-
-	//nolint // parser.ParseDir is deprecated but necessary for testdata directories
-	pkgs, err := parser.ParseDir(fset, dir, nil, parser.ParseComments)
+	files, err := parseGoFiles(fset, dir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse directory %s: %w", dir, err)
 	}
 
 	var interfaces []ExportedInterface
 
-	for _, pkg := range pkgs {
+	for pkgName, fileGroup := range files {
 		// Skip test files
-		var files []*ast.File
-		for _, file := range pkg.Files {
+		var filtered []*ast.File
+		for _, file := range fileGroup {
 			if !strings.HasSuffix(fset.Position(file.Pos()).Filename, "_test.go") {
-				files = append(files, file)
+				filtered = append(filtered, file)
 			}
 		}
 
-		if len(files) == 0 {
+		if len(filtered) == 0 {
 			continue
 		}
 
@@ -171,13 +171,13 @@ func extractInterfacesFallback(dir string) ([]ExportedInterface, error) {
 			Uses:  make(map[*ast.Ident]types.Object),
 		}
 
-		_, err = conf.Check(pkg.Name, fset, files, info)
+		_, err = conf.Check(pkgName, fset, filtered, info)
 		if err != nil {
 			_ = err // Type checking errors are common in partial code, continue anyway
 		}
 
 		// Extract interfaces using go/types
-		for _, file := range files {
+		for _, file := range filtered {
 			for _, decl := range file.Decls {
 				genDecl, ok := decl.(*ast.GenDecl)
 				if !ok {
@@ -326,29 +326,27 @@ func ExtractTypes(dir string) ([]ExportedType, error) {
 	return typesList, nil
 }
 
-// extractTypesFallback uses parser.ParseDir as a fallback when go/packages fails.
+// extractTypesFallback parses Go files directly as a fallback when go/packages fails.
 // This is needed for testdata directories and other edge cases.
 func extractTypesFallback(dir string) ([]ExportedType, error) {
 	fset := token.NewFileSet()
-
-	//nolint // parser.ParseDir is deprecated but necessary for testdata directories
-	pkgs, err := parser.ParseDir(fset, dir, nil, parser.ParseComments)
+	files, err := parseGoFiles(fset, dir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse directory %s: %w", dir, err)
 	}
 
 	var typesList []ExportedType
 
-	for _, pkg := range pkgs {
+	for pkgName, fileGroup := range files {
 		// Skip test files
-		var files []*ast.File
-		for _, file := range pkg.Files {
+		var filtered []*ast.File
+		for _, file := range fileGroup {
 			if !strings.HasSuffix(fset.Position(file.Pos()).Filename, "_test.go") {
-				files = append(files, file)
+				filtered = append(filtered, file)
 			}
 		}
 
-		if len(files) == 0 {
+		if len(filtered) == 0 {
 			continue
 		}
 
@@ -363,13 +361,13 @@ func extractTypesFallback(dir string) ([]ExportedType, error) {
 			Uses:  make(map[*ast.Ident]types.Object),
 		}
 
-		_, err = conf.Check(pkg.Name, fset, files, info)
+		_, err = conf.Check(pkgName, fset, filtered, info)
 		if err != nil {
 			_ = err // Type checking errors are common in partial code, continue anyway
 		}
 
 		// Extract types using go/types
-		for _, file := range files {
+		for _, file := range filtered {
 			for _, decl := range file.Decls {
 				genDecl, ok := decl.(*ast.GenDecl)
 				if !ok {
@@ -494,4 +492,25 @@ func getTypeKindFromType(typ types.Type) string {
 	default:
 		return "unknown"
 	}
+}
+
+// parseGoFiles parses all .go files in dir, grouped by package name.
+func parseGoFiles(fset *token.FileSet, dir string) (map[string][]*ast.File, error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+	pkgs := make(map[string][]*ast.File)
+	for _, e := range entries {
+		if e.IsDir() || !strings.HasSuffix(e.Name(), ".go") {
+			continue
+		}
+		f, err := parser.ParseFile(fset, filepath.Join(dir, e.Name()), nil, parser.ParseComments)
+		if err != nil {
+			continue
+		}
+		name := f.Name.Name
+		pkgs[name] = append(pkgs[name], f)
+	}
+	return pkgs, nil
 }
