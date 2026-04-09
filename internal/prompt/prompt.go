@@ -15,6 +15,7 @@ Guidelines:
 - Use the available tools to read, write, edit, search, and run commands in the project directory.
 - All file paths are relative to the project directory. Do not attempt to access paths outside it.
 - Be concise. Do not explain what you are about to do -- just do it.
+- Do not waste iterations on cleanup. Temporary files (tmp/, scratch files) are gitignored and will not be committed. Move on to calling done instead of trying to delete files.
 
 IMPORTANT: You MUST call the done tool when you have finished the task. Pass a brief summary of what you accomplished. If you do not call done, your work will be lost.`
 
