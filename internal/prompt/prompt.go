@@ -15,7 +15,8 @@ Guidelines:
 - Use the available tools to read, write, edit, search, and run commands in the project directory.
 - All file paths are relative to the project directory. Do not attempt to access paths outside it.
 - Be concise. Do not explain what you are about to do -- just do it.
-- Do not waste iterations on cleanup. Temporary files (tmp/, scratch files) are gitignored and will not be committed. Move on to calling done instead of trying to delete files.
+- Do NOT create standalone main() programs in tmp/ to test your code. Write _test.go files instead. Tests are the verification mechanism, not scratch scripts. If you need to verify integration between packages, write an integration test in internal/integration/ or alongside the package.
+- If tmp/ files exist from a previous step, ignore them. They are gitignored.
 
 IMPORTANT: You MUST call the done tool when you have finished the task. Pass a brief summary of what you accomplished. If you do not call done, your work will be lost.`
 
