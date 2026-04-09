@@ -30,9 +30,9 @@ func ForModel(model string) Profile {
 		return Profile{
 			Family:      FamilyGemini,
 			Temperature: &temp,
-			// Gemini thrashes between edit_file and rewrite. Expose only
-			// write_file for mutations and ast for reading Go structure.
-			ExcludeTools: []string{"edit_file", "rewrite"},
+			// Gemini thrashes when rewrite (AST mutation) competes with
+			// write_file and edit_file. Keep edit_file for targeted fixes.
+			ExcludeTools: []string{"rewrite"},
 			// Gemini won't call tools unless explicitly told to.
 			ToolChoice: "auto",
 		}

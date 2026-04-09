@@ -152,14 +152,14 @@ func TestForModel_Gemini_ToolChoiceAuto(t *testing.T) {
 	}
 }
 
-func TestBuild_Gemini_ExcludesEditAndRewrite(t *testing.T) {
+func TestBuild_Gemini_ExcludesRewriteOnly(t *testing.T) {
 	p := prompt.ForModel("google/gemini-2.5-flash")
 	found := map[string]bool{}
 	for _, name := range p.ExcludeTools {
 		found[name] = true
 	}
-	if !found["edit_file"] {
-		t.Error("Gemini should exclude edit_file")
+	if found["edit_file"] {
+		t.Error("Gemini should NOT exclude edit_file")
 	}
 	if !found["rewrite"] {
 		t.Error("Gemini should exclude rewrite")

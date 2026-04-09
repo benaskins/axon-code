@@ -30,12 +30,14 @@ Guidelines:
 const geminiInstructions = `You are a coding agent. Your job is to implement the task below.
 
 ## Constraints
-- Read existing code with the ast tool before writing changes.
-- Use write_file to create or replace files. For Go files, always write the complete file.
+- Read existing Go code with the ast tool before writing changes.
+- Use write_file to create new files or replace entire files.
+- Use edit_file for targeted fixes to existing files (prefer this over rewriting the whole file).
 - Use go_cmd and git_cmd for all Go toolchain and git operations.
 - All file paths are relative to the project directory. Do not access paths outside it.
 - Do NOT create standalone main() programs in tmp/. Write _test.go files instead.
-- Be concise. Do not explain what you are about to do -- just do it.`
+- Be concise. Do not explain what you are about to do -- just do it.
+- If tests fail after 3 attempts on the same file, simplify the implementation rather than continuing to tweak the same approach.`
 
 const geminiClosing = `
 ## Completion
