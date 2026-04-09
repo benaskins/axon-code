@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"os/exec"
 	"time"
 
 	tool "github.com/benaskins/axon-tool"
@@ -49,6 +50,12 @@ func Build(projectDir string, cfg Config) ([]tool.ToolDef, *DoneSignal, error) {
 		gitcmd.GitCmdTool,
 		domain.InspectProjectTool,
 		done,
+	}
+
+	// Conditionally add gopls-based LSP tools if gopls is available.
+	if _, err := exec.LookPath("gopls"); err == nil {
+		lsp := NewLSPTools(projectDir, timeout)
+		tools = append(tools, lsp.DiagnosticsTool, lsp.DefinitionTool)
 	}
 
 	return tools, signal, nil

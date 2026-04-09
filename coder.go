@@ -148,6 +148,14 @@ func (c *Coder) Implement(projectDir string, step plan.Step, feedback string) (*
 			case "inspect_project":
 				path, _ := args["path"].(string)
 				fmt.Fprintf(w, "tool: %s %s\n", name, path)
+			case "lsp_diagnostics":
+				path, _ := args["path"].(string)
+				fmt.Fprintf(w, "tool: %s %s\n", name, path)
+			case "lsp_definition":
+				path, _ := args["path"].(string)
+				line, _ := args["line"].(float64)
+				col, _ := args["column"].(float64)
+				fmt.Fprintf(w, "tool: %s %s:%d:%d\n", name, path, int(line), int(col))
 			case "done":
 				summary, _ := args["summary"].(string)
 				if len(summary) > 80 {
