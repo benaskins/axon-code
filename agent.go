@@ -1,11 +1,16 @@
 package code
 
-import "github.com/benaskins/axon-code/plan"
+import (
+	talk "github.com/benaskins/axon-talk"
+
+	"github.com/benaskins/axon-code/plan"
+)
 
 // ImplementResult captures the outcome of implementing a plan step.
 type ImplementResult struct {
-	Summary string   // what the agent accomplished
-	Files   []string // paths modified (relative to project dir)
+	Summary string      // what the agent accomplished
+	Files   []string    // paths modified (relative to project dir)
+	Usage   *talk.Usage // token usage for this step; nil if provider doesn't report
 }
 
 // Agent implements a plan step in a given project directory.

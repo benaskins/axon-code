@@ -132,7 +132,7 @@ func (c *Coder) Implement(projectDir string, step plan.Step, feedback string) (*
 		}
 	}
 
-	_, loopErr := loop.Run(ctx, loop.RunConfig{
+	loopResult, loopErr := loop.Run(ctx, loop.RunConfig{
 		Client:    c.client,
 		Request:   req,
 		Tools:     toolMap,
@@ -143,10 +143,14 @@ func (c *Coder) Implement(projectDir string, step plan.Step, feedback string) (*
 	// If the done tool was called, return the summary regardless of loop error
 	// (context cancellation is expected when done exits the loop early).
 	if signal.Done {
-		return &ImplementResult{
+		result := &ImplementResult{
 			Summary: signal.Summary,
 			Files:   signal.Files,
-		}, nil
+		}
+		if loopResult != nil {
+			result.Usage = loopResult.Usage
+		}
+		return result, nil
 	}
 
 	if loopErr != nil {
