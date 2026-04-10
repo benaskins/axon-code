@@ -28,11 +28,12 @@ func Build(projectDir string, cfg Config) ([]tool.ToolDef, *DoneSignal, error) {
 
 	signal := &DoneSignal{}
 	manifest := NewManifest()
+	hooks := NewDefaultHookRegistry(projectDir)
 
-	fs := NewFSTools(projectDir, manifest)
+	fs := NewFSTools(projectDir, manifest, hooks)
 	search := NewSearchTools(projectDir)
 	goast := NewGoASTTools(projectDir, manifest)
-	gocmd := NewGoCmdTool(projectDir, timeout)
+	gocmd := NewGoCmdTool(projectDir, timeout, hooks)
 	gitcmd := NewGitCmdTool(projectDir, timeout)
 	domain := NewDomainTools(projectDir)
 	done := newDoneToolWithManifest(signal, manifest)

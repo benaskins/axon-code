@@ -22,11 +22,12 @@ type FSTools struct {
 // NewFSTools constructs FSTools bound to projectDir.
 // Every path argument is resolved through sandbox.Resolve before any OS call.
 // The manifest tracks files modified by write_file and edit_file.
-func NewFSTools(projectDir string, manifest *Manifest) FSTools {
+// Hooks run after successful writes/edits (nil hooks is safe).
+func NewFSTools(projectDir string, manifest *Manifest, hooks *HookRegistry) FSTools {
 	return FSTools{
 		ReadTool:  makeReadTool(projectDir),
-		WriteTool: makeWriteTool(projectDir, manifest),
-		EditTool:  makeEditTool(projectDir, manifest),
+		WriteTool: makeWriteTool(projectDir, manifest, hooks),
+		EditTool:  makeEditTool(projectDir, manifest, hooks),
 		ListTool:  makeListTool(projectDir),
 	}
 }
@@ -81,7 +82,7 @@ func makeReadTool(projectDir string) tool.ToolDef {
 	}
 }
 
-func makeWriteTool(projectDir string, manifest *Manifest) tool.ToolDef {
+func makeWriteTool(projectDir string, manifest *Manifest, hooks *HookRegistry) tool.ToolDef {
 	return tool.ToolDef{
 		Name:        "write_file",
 		Description: "Write content to a file within the project directory. Parent directories are created if they do not exist.",
@@ -113,12 +114,16 @@ func makeWriteTool(projectDir string, manifest *Manifest) tool.ToolDef {
 				return errResult("write_file: " + err.Error())
 			}
 			manifest.Track(path)
-			return tool.ToolResult{Content: fmt.Sprintf("wrote %d bytes to %s", len(content), path)}
+			msg := fmt.Sprintf("wrote %d bytes to %s", len(content), path)
+			if hookOut := hooks.RunFileHooks(path, abs, projectDir); hookOut != "" {
+				msg += "\n" + hookOut
+			}
+			return tool.ToolResult{Content: msg}
 		},
 	}
 }
 
-func makeEditTool(projectDir string, manifest *Manifest) tool.ToolDef {
+func makeEditTool(projectDir string, manifest *Manifest, hooks *HookRegistry) tool.ToolDef {
 	return tool.ToolDef{
 		Name:        "edit_file",
 		Description: "Replace the first occurrence of old_string with new_string in a file. Works on any file type. For structural Go changes (rename, replace function body), prefer the rewrite tool.",
@@ -161,7 +166,11 @@ func makeEditTool(projectDir string, manifest *Manifest) tool.ToolDef {
 				return errResult("edit_file: " + err.Error())
 			}
 			manifest.Track(path)
-			return tool.ToolResult{Content: fmt.Sprintf("edited %s", path)}
+			msg := fmt.Sprintf("edited %s", path)
+			if hookOut := hooks.RunFileHooks(path, abs, projectDir); hookOut != "" {
+				msg += "\n" + hookOut
+			}
+			return tool.ToolResult{Content: msg}
 		},
 	}
 }
@@ -237,7 +246,8 @@ func errResult(msg string) tool.ToolResult {
 
 // CmdResult is a JSON-serializable command execution result used by go_cmd and git_cmd.
 type CmdResult struct {
-	Stdout   string `json:"stdout"`
-	Stderr   string `json:"stderr"`
-	ExitCode int    `json:"exit_code"`
+	Stdout   string            `json:"stdout"`
+	Stderr   string            `json:"stderr"`
+	ExitCode int               `json:"exit_code"`
+	Hooks    map[string]string `json:"hooks,omitempty"`
 }

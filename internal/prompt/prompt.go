@@ -13,7 +13,7 @@ const coreGuidelines = `- Read existing code before modifying it.
 - Be concise. Do not explain what you are about to do -- just do it.
 - Do NOT create standalone main() programs in tmp/ to test your code. Write _test.go files instead. Tests are the verification mechanism, not scratch scripts. If you need to verify integration between packages, write an integration test in internal/integration/ or alongside the package.
 - If tmp/ files exist from a previous step, ignore them. They are gitignored.
-- If go_cmd build or vet fails, use lsp_diagnostics on the failing file for detailed type error messages with line:column positions.
+- Build and vet failures automatically include gopls diagnostics with exact line:column positions. Read the hooks section of the result for details.
 - Use lsp_definition to look up the type signature and documentation of any symbol at a specific file position. This is how you discover dependency APIs.`
 
 const doneInstruction = `IMPORTANT: You MUST call the done tool when you have finished the task. Pass a brief summary of what you accomplished. If you do not call done, your work will be lost.`
@@ -40,7 +40,7 @@ const geminiInstructions = `You are a coding agent. Your job is to implement the
 - Do NOT create standalone main() programs in tmp/. Write _test.go files instead.
 - Be concise. Do not explain what you are about to do -- just do it.
 - If tests fail after 3 attempts on the same file, simplify the implementation rather than continuing to tweak the same approach.
-- IMPORTANT: After any failed go_cmd build or vet, immediately run lsp_diagnostics on the failing file. It gives you specific type errors with exact positions. Do not guess at fixes without reading the diagnostics first.
+- Build and vet failures automatically include detailed gopls diagnostics in the result. Read the hooks section for exact error positions before attempting fixes.
 - When you encounter an unknown type or function from a dependency, use lsp_definition at the symbol position to see its signature and documentation. Do not guess at APIs.`
 
 const geminiClosing = `

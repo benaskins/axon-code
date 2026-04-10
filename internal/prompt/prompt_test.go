@@ -174,24 +174,24 @@ func TestBuild_Gemini_WriteFileGuidance(t *testing.T) {
 	}
 }
 
-func TestBuild_Gemini_LSPGuidance(t *testing.T) {
+func TestBuild_Gemini_DiagnosticsGuidance(t *testing.T) {
 	p := prompt.ForModel("google/gemini-2.5-flash")
 	out := prompt.Build("", testStep, "", p)
-	if !strings.Contains(out, "lsp_diagnostics") {
-		t.Error("Gemini prompt should mention lsp_diagnostics")
+	if !strings.Contains(out, "diagnostics") {
+		t.Error("Gemini prompt should mention automatic diagnostics")
 	}
 	if !strings.Contains(out, "lsp_definition") {
 		t.Error("Gemini prompt should mention lsp_definition")
 	}
 }
 
-func TestBuild_AllFamilies_LSPGuidance(t *testing.T) {
+func TestBuild_AllFamilies_DiagnosticsGuidance(t *testing.T) {
 	for _, family := range []string{"qwen/test", "google/gemini-2.5-flash", "anthropic/claude"} {
 		t.Run(family, func(t *testing.T) {
 			p := prompt.ForModel(family)
 			out := prompt.Build("", testStep, "", p)
-			if !strings.Contains(out, "lsp_diagnostics") {
-				t.Errorf("prompt should mention lsp_diagnostics")
+			if !strings.Contains(out, "diagnostics") {
+				t.Errorf("prompt should mention diagnostics")
 			}
 		})
 	}

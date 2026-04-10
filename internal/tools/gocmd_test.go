@@ -11,7 +11,7 @@ import (
 
 func TestGoCmdVersion(t *testing.T) {
 	dir := t.TempDir()
-	gc := tools.NewGoCmdTool(dir, 10*time.Second)
+	gc := tools.NewGoCmdTool(dir, 10*time.Second, nil)
 
 	result := gc.GoCmdTool.Execute(toolCtx(), args("args", "version"))
 	if strings.Contains(result.Content, "error") {
@@ -29,7 +29,7 @@ func TestGoCmdVersion(t *testing.T) {
 
 func TestGoCmdRejectsDisallowedSubcommand(t *testing.T) {
 	dir := t.TempDir()
-	gc := tools.NewGoCmdTool(dir, 10*time.Second)
+	gc := tools.NewGoCmdTool(dir, 10*time.Second, nil)
 
 	result := gc.GoCmdTool.Execute(toolCtx(), args("args", "install-something-bad"))
 	if !strings.Contains(result.Content, "not allowed") {
@@ -39,7 +39,7 @@ func TestGoCmdRejectsDisallowedSubcommand(t *testing.T) {
 
 func TestGoCmdRejectsEmptyArgs(t *testing.T) {
 	dir := t.TempDir()
-	gc := tools.NewGoCmdTool(dir, 10*time.Second)
+	gc := tools.NewGoCmdTool(dir, 10*time.Second, nil)
 
 	result := gc.GoCmdTool.Execute(toolCtx(), args("args", ""))
 	if !strings.Contains(result.Content, "error") {
@@ -49,7 +49,7 @@ func TestGoCmdRejectsEmptyArgs(t *testing.T) {
 
 func TestGoCmdMissingArgs(t *testing.T) {
 	dir := t.TempDir()
-	gc := tools.NewGoCmdTool(dir, 10*time.Second)
+	gc := tools.NewGoCmdTool(dir, 10*time.Second, nil)
 
 	result := gc.GoCmdTool.Execute(toolCtx(), args())
 	if !strings.Contains(result.Content, "error") {
@@ -59,7 +59,7 @@ func TestGoCmdMissingArgs(t *testing.T) {
 
 func TestGoCmdCwdIsProjectDir(t *testing.T) {
 	dir := t.TempDir()
-	gc := tools.NewGoCmdTool(dir, 10*time.Second)
+	gc := tools.NewGoCmdTool(dir, 10*time.Second, nil)
 
 	result := gc.GoCmdTool.Execute(toolCtx(), args("args", "env GOPATH"))
 	if strings.Contains(result.Content, "error:") {

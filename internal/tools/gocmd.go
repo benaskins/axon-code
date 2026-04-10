@@ -18,9 +18,10 @@ type GoCmdTools struct {
 }
 
 // NewGoCmdTool constructs GoCmdTools bound to projectDir.
-func NewGoCmdTool(projectDir string, defaultTimeout time.Duration) GoCmdTools {
+// Hooks run after failed commands (nil hooks is safe).
+func NewGoCmdTool(projectDir string, defaultTimeout time.Duration, hooks *HookRegistry) GoCmdTools {
 	return GoCmdTools{
-		GoCmdTool: makeGoCmdTool(projectDir, defaultTimeout),
+		GoCmdTool: makeGoCmdTool(projectDir, defaultTimeout, hooks),
 	}
 }
 
@@ -41,7 +42,7 @@ var allowedGoSubcommands = map[string]bool{
 	"generate": true,
 }
 
-func makeGoCmdTool(projectDir string, defaultTimeout time.Duration) tool.ToolDef {
+func makeGoCmdTool(projectDir string, defaultTimeout time.Duration, hooks *HookRegistry) tool.ToolDef {
 	subcommands := make([]string, 0, len(allowedGoSubcommands))
 	for k := range allowedGoSubcommands {
 		subcommands = append(subcommands, k)
@@ -108,6 +109,7 @@ func makeGoCmdTool(projectDir string, defaultTimeout time.Duration) tool.ToolDef
 						result.Stderr = err.Error()
 					}
 				}
+				result.Hooks = hooks.RunCmdHooks(parts[0], result.ExitCode, projectDir)
 			}
 
 			data, jsonErr := json.Marshal(result)

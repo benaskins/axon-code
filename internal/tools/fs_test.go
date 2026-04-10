@@ -26,7 +26,7 @@ func args(pairs ...any) map[string]any {
 // TestWriteReadRoundTrip verifies write_file + read_file produce the same content.
 func TestWriteReadRoundTrip(t *testing.T) {
 	dir := t.TempDir()
-	fs := tools.NewFSTools(dir, tools.NewManifest())
+	fs := tools.NewFSTools(dir, tools.NewManifest(), nil)
 
 	writeResult := fs.WriteTool.Execute(toolCtx(), args("path", "hello.txt", "content", "line1\nline2\nline3\n"))
 	if strings.Contains(writeResult.Content, "error") {
@@ -45,7 +45,7 @@ func TestWriteReadRoundTrip(t *testing.T) {
 // TestReadWithOffsetAndLimit verifies partial reads.
 func TestReadWithOffsetAndLimit(t *testing.T) {
 	dir := t.TempDir()
-	fs := tools.NewFSTools(dir, tools.NewManifest())
+	fs := tools.NewFSTools(dir, tools.NewManifest(), nil)
 
 	content := "alpha\nbeta\ngamma\ndelta\nepsilon\n"
 	fs.WriteTool.Execute(toolCtx(), args("path", "lines.txt", "content", content))
@@ -69,7 +69,7 @@ func TestReadWithOffsetAndLimit(t *testing.T) {
 // TestWriteCreatesParentDirs verifies write_file creates parent dirs.
 func TestWriteCreatesParentDirs(t *testing.T) {
 	dir := t.TempDir()
-	fs := tools.NewFSTools(dir, tools.NewManifest())
+	fs := tools.NewFSTools(dir, tools.NewManifest(), nil)
 
 	result := fs.WriteTool.Execute(toolCtx(), args("path", "sub/nested/file.txt", "content", "hello"))
 	if strings.Contains(result.Content, "error") {
@@ -85,7 +85,7 @@ func TestWriteCreatesParentDirs(t *testing.T) {
 // TestReadGoFiles verifies read_file can read .go files.
 func TestReadGoFiles(t *testing.T) {
 	dir := t.TempDir()
-	fs := tools.NewFSTools(dir, tools.NewManifest())
+	fs := tools.NewFSTools(dir, tools.NewManifest(), nil)
 
 	fs.WriteTool.Execute(toolCtx(), args("path", "main.go", "content", "package main\n"))
 
@@ -98,7 +98,7 @@ func TestReadGoFiles(t *testing.T) {
 // TestListDir verifies list_dir returns immediate children with types.
 func TestListDir(t *testing.T) {
 	dir := t.TempDir()
-	fs := tools.NewFSTools(dir, tools.NewManifest())
+	fs := tools.NewFSTools(dir, tools.NewManifest(), nil)
 
 	fs.WriteTool.Execute(toolCtx(), args("path", "afile.txt", "content", "x"))
 	fs.WriteTool.Execute(toolCtx(), args("path", "subdir/child.txt", "content", "y"))
@@ -119,7 +119,7 @@ func TestListDir(t *testing.T) {
 // TestListDirTypeLabels verifies list_dir labels files and dirs.
 func TestListDirTypeLabels(t *testing.T) {
 	dir := t.TempDir()
-	fs := tools.NewFSTools(dir, tools.NewManifest())
+	fs := tools.NewFSTools(dir, tools.NewManifest(), nil)
 
 	fs.WriteTool.Execute(toolCtx(), args("path", "readme.md", "content", "doc"))
 	fs.WriteTool.Execute(toolCtx(), args("path", "pkg/main.go", "content", "pkg"))
@@ -133,7 +133,7 @@ func TestListDirTypeLabels(t *testing.T) {
 // TestTraversalRejected verifies tools reject path traversal.
 func TestTraversalRejected(t *testing.T) {
 	dir := t.TempDir()
-	fs := tools.NewFSTools(dir, tools.NewManifest())
+	fs := tools.NewFSTools(dir, tools.NewManifest(), nil)
 
 	escapePath := filepath.Join("..", "escape.txt")
 
