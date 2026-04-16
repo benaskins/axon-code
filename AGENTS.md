@@ -5,7 +5,7 @@
 | Module | Role | Boundary |
 |--------|------|----------|
 | **axon-loop** | Core conversation loop: orchestrates LLM turns, drives tool calls, iterates until `done` or max iterations | non-deterministic |
-| **axon-talk** | Provider-agnostic LLM adapter: Anthropic, OpenRouter/Qwen, Ollama, Cloudflare AI Gateway | deterministic |
+| **axon-talk** | Provider-agnostic LLM adapter: Anthropic, OpenAI-compatible (OpenRouter, etc.) | deterministic |
 | **axon-tool** | Tool definitions: `read_file`, `write_file`, `edit_file`, `list_dir`, `grep`, `glob`, `bash`, `done` | deterministic |
 
 ## Boundary Classification
