@@ -127,7 +127,24 @@ func (c *Coder) Implement(projectDir string, step plan.Step, feedback string) (*
 	var cb loop.Callbacks
 	if c.cfg.Verbose != nil {
 		w := c.cfg.Verbose
+		var thinkBuf []byte
+		flushThinking := func() {
+			if len(thinkBuf) == 0 {
+				return
+			}
+			s := string(thinkBuf)
+			thinkBuf = thinkBuf[:0]
+			// Truncate to first 200 chars for log readability.
+			if len(s) > 200 {
+				s = s[:200] + "..."
+			}
+			fmt.Fprintf(w, "thinking: %s\n", s)
+		}
+		cb.OnThinking = func(token string) {
+			thinkBuf = append(thinkBuf, token...)
+		}
 		cb.OnToolUse = func(name string, args map[string]any) {
+			flushThinking()
 			switch name {
 			case "read_file", "write_file", "edit_file", "ast", "rewrite":
 				path, _ := args["path"].(string)
