@@ -103,6 +103,9 @@ func makeWriteTool(projectDir string, manifest *Manifest, hooks *HookRegistry) t
 			if !ok {
 				return errResult("write_file: missing required arg 'content'")
 			}
+			if sandbox.IsScratchPath(path) {
+				return errResult("write_file: scratch directory tmp/ is not allowed. Write _test.go files instead of standalone programs. Use go_cmd doc or lsp_definition to explore APIs.")
+			}
 			abs, err := sandbox.Resolve(projectDir, path)
 			if err != nil {
 				return errResult("write_file: " + err.Error())
@@ -148,6 +151,9 @@ func makeEditTool(projectDir string, manifest *Manifest, hooks *HookRegistry) to
 			newStr, ok := stringArg(a, "new_string")
 			if !ok {
 				return errResult("edit_file: missing required arg 'new_string'")
+			}
+			if sandbox.IsScratchPath(path) {
+				return errResult("edit_file: scratch directory tmp/ is not allowed. Write _test.go files instead of standalone programs. Use go_cmd doc or lsp_definition to explore APIs.")
 			}
 			abs, err := sandbox.Resolve(projectDir, path)
 			if err != nil {

@@ -6,6 +6,31 @@ import (
 	"github.com/benaskins/axon-code/internal/sandbox"
 )
 
+func TestIsScratchPath(t *testing.T) {
+	tests := []struct {
+		path string
+		want bool
+	}{
+		{"tmp/explore.go", true},
+		{"tmp/main.go", true},
+		{"tmp/nested/file.go", true},
+		{"internal/pkg/foo.go", false},
+		{"main.go", false},
+		{"cmd/app/main.go", false},
+		{"tmpfile.go", false},       // "tmp" as prefix, not directory
+		{"internal/tmp/ok.go", false}, // tmp nested under another dir is fine
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.path, func(t *testing.T) {
+			got := sandbox.IsScratchPath(tc.path)
+			if got != tc.want {
+				t.Errorf("IsScratchPath(%q) = %v, want %v", tc.path, got, tc.want)
+			}
+		})
+	}
+}
+
 func TestResolve(t *testing.T) {
 	root := "/projects/myapp"
 

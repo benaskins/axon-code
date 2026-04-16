@@ -7,6 +7,14 @@ import (
 	"strings"
 )
 
+// IsScratchPath returns true if relPath targets a top-level tmp/ directory.
+// Scratch paths are blocked for write operations to prevent the model from
+// creating standalone exploration programs instead of writing proper tests.
+func IsScratchPath(relPath string) bool {
+	clean := filepath.Clean(relPath)
+	return clean == "tmp" || strings.HasPrefix(clean, "tmp"+string(filepath.Separator))
+}
+
 // Resolve resolves relPath relative to root, returning the absolute path.
 // It returns an error if relPath is empty, is absolute, or escapes root via traversal.
 func Resolve(root, relPath string) (string, error) {

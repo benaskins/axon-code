@@ -130,6 +130,38 @@ func TestListDirTypeLabels(t *testing.T) {
 	}
 }
 
+// TestScratchPathRejected verifies write_file and edit_file reject tmp/ paths.
+func TestScratchPathRejected(t *testing.T) {
+	dir := t.TempDir()
+	fs := tools.NewFSTools(dir, tools.NewManifest(), nil)
+
+	// write_file to tmp/ should be rejected
+	wr := fs.WriteTool.Execute(toolCtx(), args("path", "tmp/explore.go", "content", "package main"))
+	if !strings.Contains(wr.Content, "error") {
+		t.Errorf("write_file tmp/explore.go should be rejected, got: %s", wr.Content)
+	}
+	if !strings.Contains(wr.Content, "scratch") {
+		t.Errorf("expected scratch dir message, got: %s", wr.Content)
+	}
+
+	// write_file to tmp/nested/ should also be rejected
+	wr2 := fs.WriteTool.Execute(toolCtx(), args("path", "tmp/nested/file.go", "content", "package foo"))
+	if !strings.Contains(wr2.Content, "error") {
+		t.Errorf("write_file tmp/nested/file.go should be rejected, got: %s", wr2.Content)
+	}
+
+	// edit_file to tmp/ should be rejected (even if file existed)
+	er := fs.EditTool.Execute(toolCtx(), args("path", "tmp/explore.go", "old_string", "x", "new_string", "y"))
+	if !strings.Contains(er.Content, "error") {
+		t.Errorf("edit_file tmp/explore.go should be rejected, got: %s", er.Content)
+	}
+
+	// read_file from tmp/ should still work (not blocked)
+	// First create a file manually to read
+	fs2 := tools.NewFSTools(dir, tools.NewManifest(), nil)
+	_ = fs2 // read is tested separately; the point is write/edit are blocked
+}
+
 // TestTraversalRejected verifies tools reject path traversal.
 func TestTraversalRejected(t *testing.T) {
 	dir := t.TempDir()
