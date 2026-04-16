@@ -7,12 +7,25 @@ import (
 	"strings"
 )
 
-// IsScratchPath returns true if relPath targets a top-level tmp/ directory.
+// IsScratchPath returns true if relPath targets a scratch file or directory.
 // Scratch paths are blocked for write operations to prevent the model from
 // creating standalone exploration programs instead of writing proper tests.
+//
+// Blocked patterns:
+//   - tmp/ directory and anything under it
+//   - tmp_*.go files at any level (standalone scratch programs)
 func IsScratchPath(relPath string) bool {
 	clean := filepath.Clean(relPath)
-	return clean == "tmp" || strings.HasPrefix(clean, "tmp"+string(filepath.Separator))
+	// Block tmp/ directory.
+	if clean == "tmp" || strings.HasPrefix(clean, "tmp"+string(filepath.Separator)) {
+		return true
+	}
+	// Block tmp_*.go files (standalone scratch programs).
+	base := filepath.Base(clean)
+	if strings.HasPrefix(base, "tmp_") && strings.HasSuffix(base, ".go") {
+		return true
+	}
+	return false
 }
 
 // Resolve resolves relPath relative to root, returning the absolute path.

@@ -17,8 +17,12 @@ func TestIsScratchPath(t *testing.T) {
 		{"internal/pkg/foo.go", false},
 		{"main.go", false},
 		{"cmd/app/main.go", false},
-		{"tmpfile.go", false},       // "tmp" as prefix, not directory
-		{"internal/tmp/ok.go", false}, // tmp nested under another dir is fine
+		{"tmp_cost_discover.go", true},       // tmp_*.go scratch file at root
+		{"tmp_explore.go", true},             // tmp_*.go scratch file
+		{"internal/tmp_helper.go", true},     // tmp_*.go in subdirectory
+		{"tmpfile.go", false},                // "tmp" prefix without underscore
+		{"tmp_notes.txt", false},             // tmp_ but not .go
+		{"internal/tmp/ok.go", false},        // tmp nested under another dir is fine
 	}
 
 	for _, tc := range tests {
