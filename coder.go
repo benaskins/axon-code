@@ -134,17 +134,32 @@ func (c *Coder) Implement(projectDir string, step plan.Step, feedback string) (*
 			}
 			s := string(thinkBuf)
 			thinkBuf = thinkBuf[:0]
-			// Truncate to first 200 chars for log readability.
 			if len(s) > 200 {
 				s = s[:200] + "..."
 			}
 			fmt.Fprintf(w, "thinking: %s\n", s)
 		}
+		var contentBuf []byte
+		flushContent := func() {
+			if len(contentBuf) == 0 {
+				return
+			}
+			s := string(contentBuf)
+			contentBuf = contentBuf[:0]
+			if len(s) > 300 {
+				s = s[:300] + "..."
+			}
+			fmt.Fprintf(w, "reasoning: %s\n", s)
+		}
 		cb.OnThinking = func(token string) {
 			thinkBuf = append(thinkBuf, token...)
 		}
+		cb.OnToken = func(token string) {
+			contentBuf = append(contentBuf, token...)
+		}
 		cb.OnToolUse = func(name string, args map[string]any) {
 			flushThinking()
+			flushContent()
 			switch name {
 			case "read_file", "write_file", "edit_file", "ast", "rewrite":
 				path, _ := args["path"].(string)

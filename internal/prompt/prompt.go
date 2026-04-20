@@ -14,7 +14,8 @@ const coreGuidelines = `- Read existing code before modifying it.
 - Do NOT create standalone main() programs in tmp/ to test your code. Write _test.go files instead. Tests are the verification mechanism, not scratch scripts. If you need to verify integration between packages, write an integration test in internal/integration/ or alongside the package.
 - If tmp/ files exist from a previous step, ignore them. They are gitignored.
 - Build and vet failures automatically include gopls diagnostics with exact line:column positions. Read the hooks section of the result for details.
-- Use lsp_definition to look up the type signature and documentation of any symbol at a specific file position. This is how you discover dependency APIs.`
+- Use lsp_definition to look up the type signature and documentation of any symbol at a specific file position. This is how you discover dependency APIs.
+- Do NOT refactor, rename, or reorganise code from previous steps. Work with the existing structure. If a package name collides with a stdlib package, use an import alias instead of renaming the package. Refactoring cascades across files and burns iterations.`
 
 const doneInstruction = `IMPORTANT: You MUST call the done tool when you have finished the task. Pass a brief summary of what you accomplished. If you do not call done, your work will be lost.`
 
